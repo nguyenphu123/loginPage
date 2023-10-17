@@ -1,10 +1,40 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 
 export default function Home() {
+  let [loginState, setLoginState] = useState(false);
   async function onsubmit(e) {
     e.preventDefault();
+    const res = await fetch(
+      window.location.protocol +
+        "//" +
+        window.location.hostname +
+        ":" +
+        window.location.port +
+        "/" +
+        "api/login",
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "cache-control": "no-store",
+        },
+        body: JSON.stringify({
+          inputemail: e.target.email.value,
+          inputpassword: e.target.password.value,
+        }),
+      }
+    );
+    let returnResult = await res.json();
+    if (returnResult.success) {
+      setLoginState(true);
+    } else {
+      window.alert(returnResult.msg);
+    }
   }
-  return (
+  return !loginState ? (
     <section className="bg-gray-50 dark:bg-gray-900">
       <div
         style={{ height: "60vh" }}
@@ -15,7 +45,10 @@ export default function Home() {
             <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
               Login
             </h1>
-            <form className="space-y-4 md:space-y-3" onSubmit={onsubmit}>
+            <form
+              className="space-y-4 md:space-y-3"
+              onSubmit={(e) => onsubmit(e)}
+            >
               <div>
                 <label
                   htmlFor="email"
@@ -63,5 +96,16 @@ export default function Home() {
         </div>
       </div>
     </section>
+  ) : (
+    <form className="space-y-4 md:space-y-3">
+      Hello admin
+      <button
+        type="submit"
+        onClick={(e) => setLoginState(!loginState)}
+        className="w-full text-black bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+      >
+        Logout
+      </button>
+    </form>
   );
 }
